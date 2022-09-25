@@ -1,6 +1,6 @@
 package homework.javaserver.service;
 
-import homework.javaserver.controller.PythonDTO;
+import homework.javaserver.controller.dto.PythonDTO;
 import homework.javaserver.socket.WSHandler;
 import homework.javaserver.socket.dto.CSSMessage;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,8 +16,12 @@ public class PythonService {
     // Black and white colors are the two extreme values in the relative luminance therefore one of them can create the
     // best possible contrast with any color. Worth noting that nothing is in a really good contrast with some
     // 'mid-range' grey hues. See pickContrastColor for link to the definition.
-    private static double BLACK_RELATIVE_LUMINANCE = calculateRelativeLuminance8Bit(0, 0, 0);
-    private static double WHITE_RELATIVE_LUMINANCE = calculateRelativeLuminance8Bit(255, 255, 255);
+    private static final double BLACK_RELATIVE_LUMINANCE = calculateRelativeLuminance8Bit(0, 0, 0);
+    private static final double WHITE_RELATIVE_LUMINANCE = calculateRelativeLuminance8Bit(255, 255, 255);
+
+    private static final String RGB_BACKGROUND_PATTERN_FINDER = "rgb *\\(( *\\d{1,3} *,{1} *\\d{1,3} *,{1} *\\d{1,3} *)\\)";
+    public static final String RGB_BACKGROUND_PATTERN = ".*" + RGB_BACKGROUND_PATTERN_FINDER + ".*";
+    public static final String RGB_TEXT_PATTERN = ".*rgb *\\(( *\\{red} *,{1} *\\{green} *,{1} *\\{blue} *)\\).*";
 
     @Autowired
     WSHandler wsHandler;
@@ -66,7 +70,7 @@ public class PythonService {
 
     // TODO add a exception that would resolve to 422 Unprocessable Entity, just vary the messages according to case
     private int[] getRGBColorsFromBackgroundCss(String backgroundCss) {
-        Pattern regex = Pattern.compile("rgb\\(([^()]*)\\)");
+        Pattern regex = Pattern.compile(RGB_BACKGROUND_PATTERN_FINDER);
         Matcher regexMatcher = regex.matcher(backgroundCss);
         String colors = null;
         while (regexMatcher.find()) {
