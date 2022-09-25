@@ -3,6 +3,7 @@ package homework.javaserver.controller;
 import homework.javaserver.controller.dto.PythonDTO;
 import homework.javaserver.controller.exception.BasicExceptionHandler;
 import homework.javaserver.service.PythonService;
+import homework.javaserver.socket.SessionNotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,5 +39,14 @@ public class PythonController {
         logger.info(e.getMessage() + ": " + Arrays.toString(e.getStackTrace()));
 
         return BasicExceptionHandler.createExceptionBody(e.getMessage(), HttpStatus.UNPROCESSABLE_ENTITY);
+    }
+
+    @ExceptionHandler(SessionNotFoundException.class)
+    @ResponseBody
+    @ResponseStatus(HttpStatus.GONE)
+    private Map<String, String> sessionNotFoundException(Exception e) {
+        logger.info(e.getMessage() + ": " + Arrays.toString(e.getStackTrace()));
+
+        return BasicExceptionHandler.createExceptionBody(e.getMessage(), HttpStatus.GONE);
     }
 }

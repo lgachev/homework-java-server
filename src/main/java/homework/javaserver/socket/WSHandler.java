@@ -1,6 +1,5 @@
 package homework.javaserver.socket;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import homework.javaserver.socket.dto.CSSMessage;
 import homework.javaserver.socket.dto.SessionIdMessage;
@@ -30,7 +29,7 @@ public class WSHandler extends TextWebSocketHandler {
     }
 
     @Override
-    public void afterConnectionEstablished(WebSocketSession session) throws JsonProcessingException, Exception {
+    public void afterConnectionEstablished(WebSocketSession session) throws Exception {
         sessionHandler.getSessions().put(session.getId(), session);
 
         SessionIdMessage message = new SessionIdMessage();
@@ -46,15 +45,11 @@ public class WSHandler extends TextWebSocketHandler {
         super.afterConnectionClosed(session, status);
     }
 
-    public void broadcast(String sessionId, CSSMessage message) throws JsonProcessingException, Exception {
+    public void broadcast(String sessionId, CSSMessage message) throws Exception {
         WebSocketSession session = sessionHandler.getSessions().get(sessionId);
-        if (session == null) {
-            // TODO throw exception so python can know the connection is down
-            return;
-        }
-        if (!session.isOpen()) {
+        if (session == null || !session.isOpen()) {
             sessionHandler.getSessions().remove(sessionId);
-            // TODO throw exception so python can know the connection is down
+            throw new SessionNotFoundException(sessionId);
         }
         session.sendMessage(new TextMessage(mapper.writeValueAsString(message)));
     }

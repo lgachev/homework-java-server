@@ -3,6 +3,8 @@ package homework.javaserver.service;
 import homework.javaserver.controller.dto.PythonDTO;
 import homework.javaserver.socket.WSHandler;
 import homework.javaserver.socket.dto.CSSMessage;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -13,6 +15,12 @@ import java.util.regex.Pattern;
 // TODO add unit tests for this class, there is a lot ot be tested ;)
 @Service
 public class PythonService {
+    private static Logger logger = LoggerFactory.getLogger(PythonService.class);
+    private static final String ERROR_REGEX_VALIDATION_INTERNAL = "The regex validations failed to prevent unprocessable template. Please fix them. ";
+    private static final String ERROR_REGEX_VALIDATION = "Unprocessable background color. ";
+    private static final String ERROR_REGEX_MORE_THAN_ONE_RGB = "More than one rgb() found. ";
+    private static final String ERROR_REGEX_OTHER_THAN_THREE_COLORS = "We have found more or less than three color values. ";
+
     // Black and white colors are the two extreme values in the relative luminance therefore one of them can create the
     // best possible contrast with any color. Worth noting that nothing is in a really good contrast with some
     // 'mid-range' grey hues. See pickContrastColor for link to the definition.
@@ -68,24 +76,29 @@ public class PythonService {
             + 0.0722 * (bsRGB < 0.03928 ? bsRGB / 12.92 : Math.pow((bsRGB + 0.055) / 1.055, 2.4));
     }
 
-    // TODO add a exception that would resolve to 422 Unprocessable Entity, just vary the messages according to case
     private int[] getRGBColorsFromBackgroundCss(String backgroundCss) {
-        Pattern regex = Pattern.compile(RGB_BACKGROUND_PATTERN_FINDER);
-        Matcher regexMatcher = regex.matcher(backgroundCss);
-        String colors = null;
-        while (regexMatcher.find()) {
-            if (colors == null) {
-                colors = regexMatcher.group(1);
-                // TODO throw exception if colors still == null, no rgb(*) found
-            } else {
-                // TODO throw exception, more than one rgb(*) found
+        try {
+            Pattern regex = Pattern.compile(RGB_BACKGROUND_PATTERN_FINDER);
+            Matcher regexMatcher = regex.matcher(backgroundCss);
+            String colors = null;
+            while (regexMatcher.find()) {
+                if (colors == null) {
+                    colors = regexMatcher.group(1);
+                } else {
+                    throw new RuntimeException(ERROR_REGEX_MORE_THAN_ONE_RGB);
+                }
             }
+            if (colors == null) {
+                throw new RuntimeException(ERROR_REGEX_OTHER_THAN_THREE_COLORS);
+            }
+            String[] colorsArray = colors.split(",");
+            if (colorsArray.length != 3) {
+                throw new RuntimeException(ERROR_REGEX_OTHER_THAN_THREE_COLORS);
+            }
+            return Arrays.stream(colorsArray).mapToInt(color -> Integer.parseInt(color.trim())).toArray();
+        } catch (RuntimeException e) {
+            logger.error(ERROR_REGEX_VALIDATION_INTERNAL + backgroundCss + " " + e.getMessage());
+            throw new IllegalArgumentException(ERROR_REGEX_VALIDATION + backgroundCss + " " + e.getMessage());
         }
-        String[] colorsArray = colors.split(",");
-        if (colorsArray.length != 3) {
-            // TODO throw exception, more or less than 3 RGB values found
-        }
-        // TODO handle NumberFormatException
-        return Arrays.stream(colorsArray).mapToInt(color -> Integer.parseInt(color.trim())).toArray();
     }
 }
