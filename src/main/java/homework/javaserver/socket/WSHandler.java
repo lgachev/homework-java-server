@@ -45,7 +45,7 @@ public class WSHandler extends TextWebSocketHandler {
         super.afterConnectionClosed(session, status);
     }
 
-    public void broadcast(String sessionId, CSSMessage message) throws Exception {
+    public void broadcast(String sessionId, CSSMessage message) throws IOException, SessionNotFoundException {
         WebSocketSession session = sessionHandler.getSessions().get(sessionId);
         if (session == null || !session.isOpen()) {
             sessionHandler.getSessions().remove(sessionId);

@@ -1,6 +1,7 @@
 package homework.javaserver.service;
 
 import homework.javaserver.controller.dto.PythonDTO;
+import homework.javaserver.socket.SessionNotFoundException;
 import homework.javaserver.socket.WSHandler;
 import homework.javaserver.socket.dto.CSSMessage;
 import org.slf4j.Logger;
@@ -8,6 +9,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -34,7 +36,7 @@ public class PythonService {
     @Autowired
     WSHandler wsHandler;
 
-    public void updateFrontendCss(PythonDTO pythonDTO) throws Exception {
+    public void updateFrontendCss(PythonDTO pythonDTO) throws IOException, SessionNotFoundException {
         CSSMessage message = new CSSMessage();
         message.setTimestamp(pythonDTO.getTimestamp());
         message.setCssBackgroundColor(pythonDTO.getCssBackgroundColor());

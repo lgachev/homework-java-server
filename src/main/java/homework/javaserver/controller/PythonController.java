@@ -12,6 +12,7 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.Map;
 
@@ -24,7 +25,7 @@ public class PythonController {
     private PythonService pythonService;
 
     @PostMapping("/rgb")
-    public String postRGB(@RequestBody @Valid PythonDTO pythonDTO, BindingResult bindingResult) throws Exception {
+    public String postRGB(@RequestBody @Valid PythonDTO pythonDTO, BindingResult bindingResult) throws IOException, SessionNotFoundException {
         if (bindingResult.hasErrors()) {
             throw new IllegalArgumentException(bindingResult.getAllErrors().get(0).getDefaultMessage());
         }
@@ -41,7 +42,7 @@ public class PythonController {
         return BasicExceptionHandler.createExceptionBody(e.getMessage(), HttpStatus.UNPROCESSABLE_ENTITY);
     }
 
-    @ExceptionHandler(SessionNotFoundException.class)
+    @ExceptionHandler({IOException.class, SessionNotFoundException.class})
     @ResponseBody
     @ResponseStatus(HttpStatus.GONE)
     private Map<String, String> sessionNotFoundException(Exception e) {
