@@ -9,9 +9,9 @@
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
     <groupId>homework.javaserver</groupId>
-    <artifactId>java-server</artifactId>
+    <artifactId>homework-java-server</artifactId>
     <version>0.0.1-SNAPSHOT</version>
-    <name>java-server</name>
+    <name>homework-java-server</name>
     <description>Demo project for Spring Boot</description>
     <properties>
         <java.version>17</java.version>

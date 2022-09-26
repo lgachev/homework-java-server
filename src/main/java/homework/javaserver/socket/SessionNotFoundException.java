@@ -5,7 +5,7 @@ public class SessionNotFoundException extends Exception {
 
     private String sessionId;
 
-    SessionNotFoundException(String sessionId) {
+    public SessionNotFoundException(String sessionId) {
         this.sessionId = sessionId;
     }
 

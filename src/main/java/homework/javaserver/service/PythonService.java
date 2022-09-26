@@ -14,7 +14,6 @@ import java.util.Arrays;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-// TODO add unit tests for this class, there is a lot ot be tested ;)
 @Service
 public class PythonService {
     private static Logger logger = LoggerFactory.getLogger(PythonService.class);
@@ -22,6 +21,7 @@ public class PythonService {
     private static final String ERROR_REGEX_VALIDATION = "Unprocessable background color. ";
     private static final String ERROR_REGEX_MORE_THAN_ONE_RGB = "More than one rgb() found. ";
     private static final String ERROR_REGEX_OTHER_THAN_THREE_COLORS = "We have found more or less than three color values. ";
+    private static final String ERROR_COLOR_OUT_OF_BOUDS = "The color values have to be between 0 and 255. ";
 
     // Black and white colors are the two extreme values in the relative luminance therefore one of them can create the
     // best possible contrast with any color. Worth noting that nothing is in a really good contrast with some
@@ -34,7 +34,7 @@ public class PythonService {
     public static final String RGB_TEXT_PATTERN = ".*rgb *\\(( *\\{red} *,{1} *\\{green} *,{1} *\\{blue} *)\\).*";
 
     @Autowired
-    WSHandler wsHandler;
+    private WSHandler wsHandler;
 
     public void updateFrontendCss(PythonDTO pythonDTO) throws IOException, SessionNotFoundException {
         CSSMessage message = new CSSMessage();
@@ -97,7 +97,11 @@ public class PythonService {
             if (colorsArray.length != 3) {
                 throw new RuntimeException(ERROR_REGEX_OTHER_THAN_THREE_COLORS);
             }
-            return Arrays.stream(colorsArray).mapToInt(color -> Integer.parseInt(color.trim())).toArray();
+            int[] colorValues = Arrays.stream(colorsArray).mapToInt(color -> Integer.parseInt(color.trim())).filter(i -> i >= 0 && i <= 255).toArray();
+            if (colorValues.length != 3) {
+                throw new RuntimeException(ERROR_COLOR_OUT_OF_BOUDS);
+            }
+            return colorValues;
         } catch (RuntimeException e) {
             logger.error(ERROR_REGEX_VALIDATION_INTERNAL + backgroundCss + " " + e.getMessage());
             throw new IllegalArgumentException(ERROR_REGEX_VALIDATION + backgroundCss + " " + e.getMessage());
